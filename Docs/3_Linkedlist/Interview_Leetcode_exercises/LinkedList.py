@@ -353,6 +353,109 @@ class Linkedlist:
         # Si no hay menores, dummy1.next ya es el primero de la lista 2, y funciona igual.
         self.head = dummy1.next
 
+    def reverse_between(self, start_index, end_index):
+        """
+        Invierte el orden de los nodos que están entre `start_index` y
+        `end_index` (ambos incluidos). El resto de la lista queda igual.
+
+        Idea: en vez de cambiar la dirección de todos los enlaces, vamos
+        SACANDO cada nodo del tramo y COLOCÁNDOLO justo detrás de previous_node.
+        Cada nodo que movemos queda delante de los que ya movimos, así que al
+        final el tramo queda al revés.
+
+        Hay tres punteros importantes:
+          - previous_node: el nodo justo ANTES del tramo. No se mueve nunca.
+          - current_node:  el primer nodo del tramo. No se mueve nunca; se va
+                           quedando atrás hasta ser el último del tramo.
+          - node_to_move:  el nodo que está justo después de current_node y
+                           que sacamos y recolocamos en cada vuelta.
+
+        Ejemplo con 1 -> 2 -> 3 -> 4 -> 5, start_index = 1, end_index = 3:
+
+          Preparación (dummy -> 1 -> 2 -> 3 -> 4 -> 5):
+            previous_node = nodo 1   (el anterior al tramo)
+            current_node  = nodo 2   (primero del tramo)
+
+          Vuelta 1 (node_to_move = 3):
+            1) current_node.next = node_to_move.next      2 -> 4
+            2) node_to_move.next = previous_node.next     3 -> 2
+            3) previous_node.next = node_to_move          1 -> 3
+            Lista: 1 -> 3 -> 2 -> 4 -> 5
+
+          Vuelta 2 (node_to_move = 4):
+            1) current_node.next = node_to_move.next      2 -> 5
+            2) node_to_move.next = previous_node.next     4 -> 3
+            3) previous_node.next = node_to_move          1 -> 4
+            Lista: 1 -> 4 -> 3 -> 2 -> 5
+
+          Fin: se hicieron end_index - start_index = 2 vueltas.
+          Resultado: 1 -> 4 -> 3 -> 2 -> 5
+
+        Caso start_index = 0: previous_node es el dummy, así que el primer nodo
+        del tramo es la cabeza. Al terminar, self.head = dummy.next apunta
+        al nuevo primer nodo.
+
+        Devuelve True si se hizo la inversión.
+        Si la lista tiene un solo nodo, devuelve None y no hace nada.
+
+        Coste: O(n) de tiempo (se recorre la lista una vez), O(1) de memoria
+        extra (solo se crea el nodo dummy).
+        """
+        # Un solo nodo: no hay nada que invertir
+        if self.length == 1:
+            return None
+
+        # Nodo "falso" (dummy) colocado antes de la cabeza.
+        # Su valor (0) da igual: nunca formará parte del resultado.
+        # Nos evita tratar aparte el caso en que el tramo empiece en el índice 0,
+        # porque así SIEMPRE existe un nodo anterior al tramo.
+        dummy = Node(0)
+        dummy.next = self.head
+        previous_node = dummy
+
+        # Avanzamos hasta el nodo inmediatamente ANTERIOR al tramo.
+        # Con start_index = 1 hace 1 paso: dummy -> nodo 1.
+        for _ in range(start_index):
+            previous_node = previous_node.next
+
+        # Primer nodo del tramo (nodo 2 en el ejemplo).
+        # Se queda quieto: los demás nodos se colocan delante de él.
+        current_node = previous_node.next
+
+        # Una vuelta por cada nodo que hay que mover: el tramo tiene
+        # (end_index - start_index + 1) nodos y el primero ya está en su sitio.
+        for _ in range(end_index - start_index):
+            # El nodo que vamos a sacar es siempre el siguiente a current_node
+            node_to_move = current_node.next
+
+            # 1) Lo desenganchamos: current_node salta al nodo que venía detrás
+            current_node.next = node_to_move.next
+
+            # 2) Lo apuntamos al que ahora es el primero del tramo
+            node_to_move.next = previous_node.next
+
+            # 3) Lo enganchamos justo detrás de previous_node: ahora es el primero
+            previous_node.next = node_to_move
+
+        # La cabeza puede haber cambiado (si start_index = 0).
+        # dummy.next es el primer nodo real, no el dummy.
+        self.head = dummy.next
+        return True
+
+    def get_lowest_value(self):
+        temp = self.head
+
+        if self.length == 0:
+            return None
+        elif self.length == 1:
+            return temp.value
+        else:
+            minVal = 99
+            while temp:
+                if temp.value < minVal:
+                    minVal = temp.value
+                temp = temp.next
+            return minVal
 def find_kth_from_end(ll, k):
     """
     Devuelve el nodo que está en la posición k contando desde el FINAL
