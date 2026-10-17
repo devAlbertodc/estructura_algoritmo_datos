@@ -442,6 +442,70 @@ class Linkedlist:
         self.head = dummy.next
         return True
 
+    def swap_nodes(self):
+        """
+        Intercambia los nodos de la lista por parejas, cambiando los punteros
+        (no los valores). Los nodos se mueven de sitio de verdad.
+
+        Ejemplo con 1 -> 2 -> 3 -> 4 -> 5:
+          resultado: 2 -> 1 -> 4 -> 3 -> 5
+          (el 5 se queda solo porque no tiene pareja)
+
+        Idea: en cada vuelta miramos una pareja de nodos, que llamamos
+          - first (primero):  el primer nodo de la pareja.
+          - second (segundo): el nodo que viene justo después.
+        Además usamos "previous" (anterior), el nodo que está justo ANTES
+        de la pareja. Hace falta porque, al intercambiar, alguien tiene que
+        apuntar al nuevo primer nodo de la pareja, y ese alguien es previous.
+
+        No devuelve nada: modifica la lista directamente.
+        Si la lista está vacía o tiene un solo nodo, no cambia nada.
+
+        Coste: O(n), una sola pasada, y O(1) de memoria extra.
+        """
+        # Nodo auxiliar ("dummy") colocado antes del primer nodo real.
+        # Su valor (0) no importa. Sirve para que la primera pareja también
+        # tenga un "previous", y así no hay que tratarla como caso especial.
+        dummy = Node(0)
+        dummy.next = self.head
+
+        # previous empieza en el dummy: el nodo anterior a la primera pareja
+        previous = dummy
+        # first empieza en el primer nodo real de la lista
+        first = self.head
+
+        # Seguimos mientras exista una pareja completa:
+        #   - first no es None (quedan nodos)
+        #   - first.next no es None (el primero tiene un segundo)
+        # Si queda un solo nodo suelto, el bucle termina y ese nodo no se mueve.
+        while first and first.next:
+            # Guardamos el segundo nodo de la pareja
+            second = first.next
+
+            # Los tres cambios de puntero, en este orden exacto.
+            # Situación inicial:  previous -> first -> second -> (resto)
+
+            # 1) previous apunta ahora al segundo (será el nuevo primero de la pareja)
+            previous.next = second
+            # 2) first apunta al resto de la lista (lo que venía después de second).
+            #    Esto debe hacerse ANTES del paso 3, o perderíamos el resto.
+            first.next = second.next
+            # 3) second apunta a first: ya están intercambiados
+            second.next = first
+
+            # Situación final:    previous -> second -> first -> (resto)
+
+            # Preparamos la siguiente vuelta:
+            # first es ahora el SEGUNDO de la pareja ya intercambiada, así que
+            # será el "anterior" de la siguiente pareja.
+            previous = first
+            # La siguiente pareja empieza en lo que viene después de first
+            first = first.next
+
+        # El primer nodo de la lista pudo cambiar (ahora es el antiguo segundo).
+        # El dummy sigue apuntando al nuevo primer nodo.
+        self.head = dummy.next
+
     def get_lowest_value(self):
         temp = self.head
 
@@ -456,6 +520,7 @@ class Linkedlist:
                     minVal = temp.value
                 temp = temp.next
             return minVal
+        
 def find_kth_from_end(ll, k):
     """
     Devuelve el nodo que está en la posición k contando desde el FINAL

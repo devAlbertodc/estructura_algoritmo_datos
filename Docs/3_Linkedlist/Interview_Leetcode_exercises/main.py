@@ -19,7 +19,7 @@ my_linked_list.append(3)
 my_linked_list.append(4)
 my_linked_list.append(5)
 
-my_linked_list.reverse_between(1,3)
-#my_linked_list.print_list()
+my_linked_list.swap_nodes()
+my_linked_list.print_list()
 
-print(my_linked_list.get_lowest_value())
+#print(my_linked_list.get_lowest_value())
